@@ -502,6 +502,236 @@ class SpaceSnack:
             pygame.draw.circle(screen, (255, 255, 100), (sx, sy - 25), 5)
 
 
+class SpaceSquirrel:
+    """Squirrel in a space pod - faster than dogs!"""
+    def __init__(self):
+        self.reset()
+    
+    def reset(self):
+        self.active = False
+        self.spawn_timer = random.randint(1200, 2400)  # 20-40 seconds
+        self.x = -60
+        self.y = random.randint(100, SCREEN_HEIGHT - 200)
+        self.vx = random.uniform(4, 6)
+        self.direction = 1
+        self.has_acorn = True
+        self.angle = 0
+        self.spin = 0
+    
+    def spawn(self):
+        self.active = True
+        self.direction = random.choice([-1, 1])
+        if self.direction == 1:
+            self.x = -60
+            self.vx = random.uniform(4, 6)
+        else:
+            self.x = SCREEN_WIDTH + 60
+            self.vx = -random.uniform(4, 6)
+        self.y = random.randint(100, SCREEN_HEIGHT - 200)
+        self.has_acorn = True
+        self.angle = 0 if self.direction == 1 else math.pi
+    
+    def update(self, dogs):
+        if not self.active:
+            self.spawn_timer -= 1
+            if self.spawn_timer <= 0:
+                self.spawn()
+            return None
+        
+        # Space pod movement
+        self.x += self.vx
+        self.angle += 0.02 * self.direction
+        
+        # Check if off screen
+        if (self.direction == 1 and self.x > SCREEN_WIDTH + 100) or \
+           (self.direction == -1 and self.x < -100):
+            self.reset()
+            return None
+        
+        # Check collision with dogs
+        if self.has_acorn:
+            for dog in dogs:
+                dx = self.x - dog.x
+                dy = self.y - dog.y
+                dist = math.sqrt(dx*dx + dy*dy)
+                if dist < 50:  # Caught!
+                    self.has_acorn = False
+                    # Drop cosmic acorn
+                    return {'x': self.x, 'y': self.y, 'active': True}
+        
+        return None
+    
+    def draw(self, screen):
+        if not self.active:
+            return
+        
+        sx, sy = int(self.x), int(self.y)
+        
+        # Space pod (glass bubble with squirrel inside)
+        # Pod body
+        pygame.draw.ellipse(screen, (150, 150, 170), (sx - 25, sy - 15, 50, 30))
+        pygame.draw.ellipse(screen, (100, 100, 120), (sx - 25, sy - 15, 50, 30), 2)
+        
+        # Glass dome
+        pygame.draw.ellipse(screen, (200, 230, 255, 180), (sx - 20, sy - 20, 40, 35))
+        pygame.draw.ellipse(screen, (150, 200, 255), (sx - 20, sy - 20, 40, 35), 2)
+        
+        # Squirrel inside
+        # Body
+        pygame.draw.ellipse(screen, (180, 120, 60), (sx - 12, sy - 8, 24, 18))
+        # Head
+        pygame.draw.circle(screen, (180, 120, 60), (sx + 8, sy - 10), 10)
+        # Eye
+        pygame.draw.circle(screen, (0, 0, 0), (sx + 10, sy - 12), 3)
+        pygame.draw.circle(screen, (255, 255, 255), (sx + 11, sy - 13), 1)
+        # Tail (fluffy, curled in pod)
+        pygame.draw.ellipse(screen, (200, 140, 80), (sx - 18, sy - 15, 15, 25))
+        
+        # Acorn in pod (if still has it)
+        if self.has_acorn:
+            acorn_x = sx + 15
+            pygame.draw.ellipse(screen, (160, 120, 80), (acorn_x - 4, sy - 3, 8, 10))
+            pygame.draw.arc(screen, (100, 80, 60), (acorn_x - 5, sy - 6, 10, 6), 0, 3.14, 2)
+        
+        # Pod thrusters (small flames)
+        flame_dir = -1 if self.direction == 1 else 1
+        flame_x = sx + 25 * flame_dir
+        pygame.draw.ellipse(screen, (255, 150, 50), 
+                           (flame_x - 3, sy - 4, 8, 8))
+
+
+class Beastie:
+    """The antagonist - Karen in a spaceship stealing treats!"""
+    def __init__(self):
+        self.reset()
+    
+    def reset(self):
+        self.active = False
+        self.spawn_timer = random.randint(1800, 3000)  # 30-50 seconds
+        self.x = SCREEN_WIDTH + 100
+        self.y = random.randint(80, SCREEN_HEIGHT // 2)
+        self.vx = -2.5  # Moves left
+        self.target_treat = None
+        self.steal_cooldown = 0
+        self.stolen_treats = 0
+    
+    def spawn(self):
+        self.active = True
+        self.x = SCREEN_WIDTH + 100
+        self.y = random.randint(80, SCREEN_HEIGHT // 2)
+        self.vx = -2.5
+        self.target_treat = None
+        self.steal_cooldown = 0
+    
+    def update(self, treats, dogs):
+        if not self.active:
+            self.spawn_timer -= 1
+            if self.spawn_timer <= 0:
+                self.spawn()
+            return
+        
+        # Move across screen
+        self.x += self.vx
+        
+        # Find nearest uncollected treat to steal
+        if self.steal_cooldown <= 0:
+            nearest = None
+            nearest_dist = 9999
+            for t in treats:
+                if not t.collected:
+                    tdx = t.x - self.x
+                    tdy = t.y - self.y
+                    td = math.sqrt(tdx*tdx + tdy*tdy)
+                    if td < nearest_dist and td < 300:
+                        nearest_dist, nearest = td, t
+            
+            if nearest and nearest_dist < 80:
+                # STEAL THE TREAT!
+                nearest.collected = True
+                nearest.respawn_timer = 600  # Longer respawn
+                self.stolen_treats += 1
+                self.steal_cooldown = 120  # 2 seconds before next steal
+                
+                # Thwart dogs - push them away!
+                for dog in dogs:
+                    dx = dog.x - self.x
+                    dy = dog.y - self.y
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist < 150 and dist > 0:
+                        dog.vx += (dx / dist) * 3  # Push away
+                        dog.vy += (dy / dist) * 3
+                        dog.spin = random.uniform(-0.2, 0.2)  # Spin them!
+        
+        if self.steal_cooldown > 0:
+            self.steal_cooldown -= 1
+        
+        # Off screen check
+        if self.x < -150:
+            self.reset()
+    
+    def draw(self, screen):
+        if not self.active:
+            return
+        
+        sx, sy = int(self.x), int(self.y)
+        
+        # Beastie's ship (stereotypical "Karen" cruiser - entitled looking)
+        # Main hull
+        pygame.draw.ellipse(screen, (220, 220, 240), (sx - 40, sy - 20, 80, 40))
+        pygame.draw.ellipse(screen, (180, 180, 200), (sx - 40, sy - 20, 80, 40), 2)
+        
+        # Cockpit (where Beastie is)
+        pygame.draw.ellipse(screen, (200, 180, 255), (sx - 15, sy - 25, 30, 20))
+        pygame.draw.ellipse(screen, (150, 150, 180), (sx - 15, sy - 25, 30, 20), 2)
+        
+        # Beastie's face (simplified Karen hair + angry eyes)
+        face_x, face_y = sx, sy - 18
+        # Hair (the "Karen" cut)
+        pygame.draw.polygon(screen, (120, 80, 60), [
+            (face_x - 12, face_y - 8),
+            (face_x - 8, face_y - 15),
+            (face_x, face_y - 12),
+            (face_x + 8, face_y - 15),
+            (face_x + 12, face_y - 8),
+            (face_x + 10, face_y + 5),
+            (face_x - 10, face_y + 5)
+        ])
+        # Face
+        pygame.draw.ellipse(screen, (255, 220, 200), (face_x - 8, face_y - 5, 16, 14))
+        # Angry eyes
+        pygame.draw.line(screen, (100, 50, 50), (face_x - 6, face_y - 2), (face_x - 2, face_y), 2)
+        pygame.draw.line(screen, (100, 50, 50), (face_x + 6, face_y - 2), (face_x + 2, face_y), 2)
+        # Mouth (permanent frown)
+        pygame.draw.arc(screen, (150, 50, 50), (face_x - 5, face_y + 2, 10, 6), 0, 3.14, 2)
+        
+        # Ship fins
+        pygame.draw.polygon(screen, (200, 200, 220), [
+            (sx - 30, sy),
+            (sx - 50, sy - 15),
+            (sx - 45, sy + 5)
+        ])
+        pygame.draw.polygon(screen, (200, 200, 220), [
+            (sx - 30, sy),
+            (sx - 50, sy + 15),
+            (sx - 45, sy - 5)
+        ])
+        
+        # Engine glow
+        pygame.draw.ellipse(screen, (255, 100, 100), (sx - 45, sy - 8, 15, 16))
+        
+        # "I WANT TO SPEAK TO THE MANAGER" energy beam (when stealing)
+        if self.steal_cooldown > 100:
+            beam_y = sy + 30
+            pygame.draw.polygon(screen, (255, 150, 150, 100), [
+                (sx - 10, sy + 15),
+                (sx + 10, sy + 15),
+                (sx + 30, beam_y + 40),
+                (sx - 30, beam_y + 40)
+            ])
+            # Angry text effect
+            pygame.draw.circle(screen, (255, 50, 50), (sx, sy + 40), 5)
+
+
 class StarField:
     """Deep space starfield with nebula"""
     def __init__(self, num_stars=200):
@@ -672,6 +902,13 @@ class SpaceGame:
         self.ufo = UFO()
         self.space_snack = None
         
+        # Space Squirrel in pod!
+        self.space_squirrel = SpaceSquirrel()
+        self.cosmic_acorn = None
+        
+        # BEASTIE - The antagonist!
+        self.beastie = Beastie()
+        
         get_tampa_weather()
         
         print("Space game initialized! 🚀", flush=True)
@@ -717,6 +954,40 @@ class SpaceGame:
                         dog.spin = 0.5  # Victory spin!
                         break
         
+        # Space Squirrel!
+        dropped_acorn = self.space_squirrel.update(self.dogs)
+        if dropped_acorn and self.cosmic_acorn is None:
+            self.cosmic_acorn = {'x': dropped_acorn['x'], 'y': dropped_acorn['y'], 
+                                'active': True, 'lifetime': 400}
+        self.space_squirrel.draw(self.screen)
+        
+        # Cosmic acorn from squirrel
+        if self.cosmic_acorn:
+            self.cosmic_acorn['lifetime'] -= 1
+            ca = self.cosmic_acorn
+            # Draw floating acorn
+            y_off = math.sin(pygame.time.get_ticks() * 0.01) * 8
+            pygame.draw.ellipse(self.screen, (200, 170, 100), 
+                               (int(ca['x'] - 10), int(ca['y'] + y_off - 6), 20, 12))
+            pygame.draw.circle(self.screen, (255, 200, 50), (int(ca['x']), int(ca['y'] + y_off - 15)), 5)
+            
+            # Check dog collection
+            for dog in self.dogs:
+                dx = ca['x'] - dog.x
+                dy = ca['y'] + y_off - dog.y
+                if math.sqrt(dx*dx + dy*dy) < 50:
+                    dog.score += 8  # Cosmic acorn bonus!
+                    self.cosmic_acorn = None
+                    dog.spin = 0.3
+                    break
+            
+            if self.cosmic_acorn and ca['lifetime'] <= 0:
+                self.cosmic_acorn = None
+        
+        # BEASTIE - The treat thief!
+        self.beastie.update(self.treats, self.dogs)
+        self.beastie.draw(self.screen)
+        
         # Treats
         for treat in self.treats:
             treat.update()
@@ -747,6 +1018,11 @@ class SpaceGame:
         shanti_surf = self.font_small.render(f"🚀 SHANTI: {self.dogs[1].score}", True, (150, 150, 255))
         self.screen.blit(harley_surf, (30, 30))
         self.screen.blit(shanti_surf, (30, 70))
+        
+        # Beastie status (if active)
+        if self.beastie.active:
+            beastie_surf = self.font_small.render(f"👩‍🚀 BEASTIE: {self.beastie.stolen_treats} stolen!", True, (255, 100, 100))
+            self.screen.blit(beastie_surf, (30, 110))
         
         # Zero-G indicator
         zero_g = self.font_small.render("⚠️ ZERO-G ENVIRONMENT ⚠️", True, (255, 200, 100))
