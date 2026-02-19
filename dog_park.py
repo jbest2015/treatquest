@@ -254,6 +254,22 @@ class SpaceDog:
         pygame.draw.rect(screen, (100, 100, 100), 
                         (int(sx - 8), int(sy - 8), 16, 16))  # Chest plate
         pygame.draw.circle(screen, (255, 200, 50), (int(sx), int(sy)), 5)  # Mission patch
+        
+        # Name tag above dog
+        name_text = self.name.upper()
+        try:
+            name_font = pygame.font.SysFont('arial', 24, bold=True)
+            name_surf = name_font.render(name_text, True, (255, 255, 255))
+            name_bg = pygame.Surface((name_surf.get_width() + 10, name_surf.get_height() + 6))
+            name_bg.fill((0, 0, 0))
+            name_bg.set_alpha(180)
+            # Position name tag above dog
+            name_x = int(sx) - name_surf.get_width() // 2
+            name_y = int(sy) - 55
+            screen.blit(name_bg, (name_x - 5, name_y - 3))
+            screen.blit(name_surf, (name_x, name_y))
+        except:
+            pass
 
 
 class SpaceTreat:
@@ -503,9 +519,10 @@ class SpaceSnack:
 
 
 class SpaceSquirrel:
-    """Squirrel in a space pod - faster than dogs!"""
+    """Nutter the Squirrel in a space pod - faster than dogs!"""
     def __init__(self):
         self.reset()
+        self.name = "Nutter"
     
     def reset(self):
         self.active = False
@@ -598,6 +615,20 @@ class SpaceSquirrel:
         flame_x = sx + 25 * flame_dir
         pygame.draw.ellipse(screen, (255, 150, 50), 
                            (flame_x - 3, sy - 4, 8, 8))
+        
+        # Name tag above pod
+        try:
+            name_font = pygame.font.SysFont('arial', 20, bold=True)
+            name_surf = name_font.render(self.name, True, (255, 220, 150))
+            name_bg = pygame.Surface((name_surf.get_width() + 8, name_surf.get_height() + 4))
+            name_bg.fill((60, 40, 20))
+            name_bg.set_alpha(180)
+            name_x = sx - name_surf.get_width() // 2
+            name_y = sy - 45
+            screen.blit(name_bg, (name_x - 4, name_y - 2))
+            screen.blit(name_surf, (name_x, name_y))
+        except:
+            pass
 
 
 class Bestie:
@@ -1000,7 +1031,7 @@ class SpaceGame:
         
         # Title
         title = self.font.render("TREAT QUEST", True, (255, 200, 50))
-        subtitle = self.font_med.render("🚀 SPACE EDITION 🐕‍🦺", True, (150, 220, 255))
+        subtitle = self.font_med.render("SPACE EDITION", True, (150, 220, 255))
         self.screen.blit(title, (SCREEN_WIDTH//2 - title.get_width()//2, 30))
         self.screen.blit(subtitle, (SCREEN_WIDTH//2 - subtitle.get_width()//2, 100))
         
@@ -1014,18 +1045,18 @@ class SpaceGame:
         self.screen.blit(wx_surf, (SCREEN_WIDTH - 280, 70))
         
         # Scores
-        harley_surf = self.font_small.render(f"🚀 HARLEY: {self.dogs[0].score}", True, (255, 150, 150))
-        shanti_surf = self.font_small.render(f"🚀 SHANTI: {self.dogs[1].score}", True, (150, 150, 255))
+        harley_surf = self.font_small.render(f"HARLEY: {self.dogs[0].score}", True, (255, 150, 150))
+        shanti_surf = self.font_small.render(f"SHANTI: {self.dogs[1].score}", True, (150, 150, 255))
         self.screen.blit(harley_surf, (30, 30))
         self.screen.blit(shanti_surf, (30, 70))
         
         # Bestie status (if active)
         if self.bestie.active:
-            bestie_surf = self.font_small.render(f"👩‍🚀 BESTIE: {self.bestie.stolen_treats} stolen!", True, (255, 100, 100))
+            bestie_surf = self.font_small.render(f"BESTIE: {self.bestie.stolen_treats} stolen!", True, (255, 100, 100))
             self.screen.blit(bestie_surf, (30, 110))
         
         # Zero-G indicator
-        zero_g = self.font_small.render("⚠️ ZERO-G ENVIRONMENT ⚠️", True, (255, 200, 100))
+        zero_g = self.font_small.render("ZERO-G ENVIRONMENT", True, (255, 200, 100))
         self.screen.blit(zero_g, (SCREEN_WIDTH//2 - zero_g.get_width()//2, SCREEN_HEIGHT - 50))
         
         pygame.display.flip()
