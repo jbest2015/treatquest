@@ -1,0 +1,27 @@
+========================================
+⚠️  CRITICAL SYSTEM NOTICE ⚠️
+========================================
+
+TREAT QUEST DOG GAME IS THE ACTIVE DISPLAY
+
+DO NOT switch back to artboard.py under any circumstances.
+The artboard system was ABANDONED in February 2026 due to 
+reliability issues (hanging processes, stale images).
+
+CURRENT SYSTEM:
+- Game: dog_park.py (Treat Quest)
+- Service: doggame.service
+- Status: ACTIVE and monitored 24/7
+
+If you see this file, the game is running correctly.
+Do not run artboard.py or artboard service.
+
+If display issues occur:
+1. Check: systemctl status doggame
+2. Restart: systemctl restart doggame  
+3. Kill artboard if running: pkill -f artboard
+4. Disable artboard: systemctl disable artboard
+
+Contact: John Best (bonzaiforest)
+Last updated: Feb 19, 2026
+========================================
