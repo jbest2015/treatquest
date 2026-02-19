@@ -600,8 +600,8 @@ class SpaceSquirrel:
                            (flame_x - 3, sy - 4, 8, 8))
 
 
-class Beastie:
-    """The antagonist - Karen in a spaceship stealing treats!"""
+class Bestie:
+    """Bestie - The antagonist in a spaceship stealing treats!"""
     def __init__(self):
         self.reset()
     
@@ -906,8 +906,8 @@ class SpaceGame:
         self.space_squirrel = SpaceSquirrel()
         self.cosmic_acorn = None
         
-        # BEASTIE - The antagonist!
-        self.beastie = Beastie()
+        # BESTIE - The antagonist!
+        self.bestie = Bestie()
         
         get_tampa_weather()
         
@@ -985,8 +985,8 @@ class SpaceGame:
                 self.cosmic_acorn = None
         
         # BEASTIE - The treat thief!
-        self.beastie.update(self.treats, self.dogs)
-        self.beastie.draw(self.screen)
+        self.bestie.update(self.treats, self.dogs)
+        self.bestie.draw(self.screen)
         
         # Treats
         for treat in self.treats:
@@ -1019,10 +1019,10 @@ class SpaceGame:
         self.screen.blit(harley_surf, (30, 30))
         self.screen.blit(shanti_surf, (30, 70))
         
-        # Beastie status (if active)
-        if self.beastie.active:
-            beastie_surf = self.font_small.render(f"👩‍🚀 BEASTIE: {self.beastie.stolen_treats} stolen!", True, (255, 100, 100))
-            self.screen.blit(beastie_surf, (30, 110))
+        # Bestie status (if active)
+        if self.bestie.active:
+            bestie_surf = self.font_small.render(f"👩‍🚀 BESTIE: {self.bestie.stolen_treats} stolen!", True, (255, 100, 100))
+            self.screen.blit(bestie_surf, (30, 110))
         
         # Zero-G indicator
         zero_g = self.font_small.render("⚠️ ZERO-G ENVIRONMENT ⚠️", True, (255, 200, 100))
