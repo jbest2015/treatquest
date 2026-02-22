@@ -1,0 +1,7 @@
+Pixel art illustration of a vintage red biplane with brown wooden fuselage, NOSE UP (climbing angle, pitched upward 20 degrees). Two cartoon dogs: FRONT cockpit is SHANTI — muscular yellow labrador retriever, light cream coat, floppy triangular ears, wearing wide pink collar, aviator goggles, white scarf. REAR cockpit is HARLEY — long-bodied dachshund mix, long white coat with black patches around ears/eyes, brown mask on snout, short legs, soft feathery ears, black collar with GPS tracker and round black tag. Transparent background. Retro 16-bit pixel art game sprite.
+
+AI Model: nano_banana
+Resolution: 4K
+Ontology Prompt ID: 3733836d
+Ontology Asset ID: c36ff8d4
+Generated: 2026-02-22
